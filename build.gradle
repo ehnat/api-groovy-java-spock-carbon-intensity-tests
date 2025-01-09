@@ -1,0 +1,99 @@
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
+
+plugins {
+    id 'org.springframework.boot' version '3.3.6' apply false
+    id 'groovy'
+    id 'java'
+}
+
+apply plugin: 'io.spring.dependency-management'
+
+group = 'io.github.carbonintensity'
+version = '1.0-SNAPSHOT'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+repositories {
+    mavenCentral()
+    maven { url 'https://nexus.dtc.prod.williamhill.plc:8443/repository/releases' }
+    maven { url 'https://nexus.dtc.prod.williamhill.plc:8443/repository/maven-central' }
+}
+
+dependencyManagement {
+    imports {
+        mavenBom SpringBootPlugin.BOM_COORDINATES
+        mavenBom 'org.spockframework:spock-bom:2.4-M4-groovy-4.0'
+    }
+
+    dependencies {
+        dependency 'com.athaydes:spock-reports:2.5.1-groovy-4.0'
+        dependency 'org.aeonbits.owner:owner:1.0.12'
+        dependency 'net.datafaker:datafaker:2.4.2'
+        dependency 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.2'
+    }
+}
+
+configurations.configureEach {
+    exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+}
+
+dependencies {
+    annotationProcessor "org.projectlombok:lombok"
+    compileOnly "org.projectlombok:lombok"
+
+    implementation(
+        'org.springframework.boot:spring-boot-starter-log4j2',
+        'org.apache.groovy:groovy',
+        'io.rest-assured:rest-assured',
+        'net.datafaker:datafaker',
+        'org.aeonbits.owner:owner',
+        'jakarta.xml.bind:jakarta.xml.bind-api',
+        'com.fasterxml.jackson.core:jackson-annotations:2.18.2',
+        'com.fasterxml.jackson.core:jackson-databind:2.18.2'
+    )
+
+    testImplementation(
+        'com.athaydes:spock-reports',
+        'org.spockframework:spock-core'
+    )
+}
+
+
+Map<String, String> ENVIRONMENT_TO_DEFAULT_TEST_GROUPS_MAP = [
+    'nonprod': 'Regression',
+    'prod'   : 'Smoke'
+]
+
+test {
+    testLogging.showStandardStreams = true
+    systemProperties System.properties
+    systemProperty 'file.encoding', 'UTF-8'
+
+    useJUnitPlatform()
+
+    doFirst {
+        def DEFAULT_ENVIRONMENT = 'nonprod'
+        def ENVIRONMENT_PROPERTY_NAME = 'env'
+        def TEST_GROUPS_PROPERTY_NAME = 'testGroups'
+
+        def chosenEnvironment = System.getProperty(ENVIRONMENT_PROPERTY_NAME) ?: DEFAULT_ENVIRONMENT
+        if (!ENVIRONMENT_TO_DEFAULT_TEST_GROUPS_MAP.containsKey(chosenEnvironment)) {
+            throw new InvalidUserDataException(
+                "Invalid environment: ${chosenEnvironment}. Supported environments: ${ENVIRONMENT_TO_DEFAULT_TEST_GROUPS_MAP.keySet()}" as String)
+        }
+        println "Chosen test environment: '$chosenEnvironment'"
+        systemProperty ENVIRONMENT_PROPERTY_NAME, chosenEnvironment
+
+        def chosenTestGroups = System.getProperty(TEST_GROUPS_PROPERTY_NAME) ?: ENVIRONMENT_TO_DEFAULT_TEST_GROUPS_MAP[chosenEnvironment]
+        println "Chosen testGroups: '$chosenTestGroups'"
+        systemProperty TEST_GROUPS_PROPERTY_NAME, chosenTestGroups
+
+        TestGroups testGroupsResolver = new TestGroups(chosenTestGroups)
+
+        systemProperty 'included.test.groups', testGroupsResolver.included()
+        systemProperty 'excluded.test.groups', testGroupsResolver.excluded()
+    }
+}
