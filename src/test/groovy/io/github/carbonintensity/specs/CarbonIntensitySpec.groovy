@@ -15,11 +15,11 @@ class CarbonIntensitySpec extends Specification {
             factors.data.get(0).oil == 935
     }
 
-    def "should check max intensity between 2025-01-01 and 2025-01-31"() {
+    def "should check max intensity between 2024-12-01 and 2024-12-31"() {
         when: 'send call for getting stats between proper dates'
-            Stats stats = CarbonIntensityService.getStats('2025-01-01T12:00Z','2025-01-31T12:00Z')
+            Stats stats = CarbonIntensityService.getStats('2024-12-01T12:00Z','2024-12-31T12:00Z')
 
         then: 'max intensity is returned'
-            stats.data.get(0).intensity.max == 257
+            stats.data.get(0).intensity.max == 303
     }
 }
