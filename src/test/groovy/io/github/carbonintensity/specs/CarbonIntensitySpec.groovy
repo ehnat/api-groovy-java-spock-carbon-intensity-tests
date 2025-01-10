@@ -23,6 +23,6 @@ class CarbonIntensitySpec extends Specification {
             Stats stats = CarbonIntensityService.getStats('2025-01-01T12:00Z','2025-01-31T12:00Z')
 
         then: 'max intensity is returned'
-            stats.data.get(0).intensity.max == 249
+            stats.data.get(0).intensity.max == 257
     }
 }

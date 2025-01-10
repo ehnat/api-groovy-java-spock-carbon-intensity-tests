@@ -18,8 +18,6 @@ java {
 
 repositories {
     mavenCentral()
-    maven { url 'https://nexus.dtc.prod.williamhill.plc:8443/repository/releases' }
-    maven { url 'https://nexus.dtc.prod.williamhill.plc:8443/repository/maven-central' }
 }
 
 dependencyManagement {
