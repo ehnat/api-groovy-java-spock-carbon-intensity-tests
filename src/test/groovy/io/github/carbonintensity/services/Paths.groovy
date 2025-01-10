@@ -5,6 +5,7 @@ import groovy.transform.CompileStatic
 @CompileStatic
 class Paths {
 
+    public static final String BASE_URL = 'https://api.carbonintensity.org.uk/intensity'
     public static final String FACTORS = '/factors'
     public static final String STATS = '/stats'
     public static final String STATS_FROM_TO = "$STATS/{from}/{to}"
