@@ -16,7 +16,6 @@ import static org.apache.http.HttpStatus.SC_OK
 @CompileStatic
 class CarbonIntensityService {
 
-    private static final String APPLICATION_JSON = ContentType.JSON
     private static final List<Filter> LOGGING_FILTERS = [new RequestLoggingFilter(), new ResponseLoggingFilter()]
 
     static Factors getFactors() {
@@ -40,12 +39,11 @@ class CarbonIntensityService {
                .extract().response().<Stats> as(Stats)
     }
 
-    private static RequestSpecification basicSpec(String accept = APPLICATION_JSON) {
+    private static RequestSpecification basicSpec() {
         new RequestSpecBuilder()
             .setBaseUri(Paths.BASE_URL)
             .addFilters(LOGGING_FILTERS)
-            .setAccept(accept)
-            .setContentType(ContentType.JSON)
+            .setAccept(ContentType.JSON)
             .build()
     }
 }
